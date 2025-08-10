@@ -1,0 +1,24 @@
+{
+  "id": "/",
+  "name": "E-T Calculator",
+  "short_name": "E-T Calc",
+  "description": "A gift from Elsakar-Tech",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f6",
+  "theme_color": "#0077d8",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
