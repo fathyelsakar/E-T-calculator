@@ -1,28 +1,25 @@
-const CACHE_NAME = 'et-calculator-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/logo.png'
+const CACHE_NAME = "calc-cache-v1";
+const cacheFiles = [
+  '/E-T-calculator/',
+  '/E-T-calculator/index.html',
+  '/E-T-calculator/style.css',
+  '/E-T-calculator/app.js',
+  '/E-T-calculator/icons/icon-192.png',
+  '/E-T-calculator/icons/icon-512.png'
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .catch(err => console.log('Failed to cache:', err))
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(cacheFiles);
+    })
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
-      }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      })
+self.addEventListener("fetch", (e) => {
+  e.respondWith(
+    caches.match(e.request).then((response) => {
+      return response || fetch(e.request);
+    })
   );
 });
