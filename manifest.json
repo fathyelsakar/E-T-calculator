@@ -3,7 +3,7 @@
   "name": "E-T Calculator",
   "short_name": "E-T Calc",
   "description": "A gift from Elsakar-Tech",
-  "start_url": "/",
+  "start_url": "/E-T-calculator/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f3f4f6",
@@ -21,4 +21,5 @@
       "type": "image/png"
     }
   ]
+
 }
