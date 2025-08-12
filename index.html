@@ -67,13 +67,16 @@
     .calculator {
       width: 96vw;
       max-width: 400px;
-      margin: 4px auto;
+      margin: 0 auto;
       background: var(--panel);
       backdrop-filter: blur(10px);
       border-radius: 18px;
       box-shadow: 0 10px 30px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.1);
       padding: 12px 14px 16px;
       direction: ltr;
+      height: 88vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .display {
@@ -82,49 +85,92 @@
       padding: 16px;
       margin-bottom: 8px;
       position: relative;
-      min-height: 120px;
-      height: 25vh;
+      min-height: 180px;
+      height: 40vh;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border: 1px solid #50c7ff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
     }
 
     .operation-count {
       position: absolute;
-      left: 12px;
-      top: 20px;
-      background: #0077d8;
-      color: #fff;
+      left: 1px;
+      top: 1px;
+      background: rgba(200, 225, 234, 0.1);
+      color: #000000;
       font-size: 15px;
       font-weight: 500;
       padding: 4px 8px;
       border-radius: 8px;
       backdrop-filter: blur(2px);
+      z-index: 10;
+    }
+
+    [data-theme="dark"] .operation-count {
+      color: #ffffff;
+      background: rgba(30, 50, 80, 0.3);
+    }
+
+    .equation-area {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding-top: 2px;
     }
 
     .small-screen {
       color: var(--muted);
       text-align: right;
-      font-size: 15px;
-      min-height: 20px;
-      word-wrap: break-word;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 12;
+      -webkit-box-orient: vertical;
+      max-height: 216px;
+      padding: 0;
+      margin: 0;
       direction: ltr;
+      word-wrap: break-word;
+      word-break: break-all;
+      width: 100%;
+    }
+
+    .result-area {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
     }
 
     .big-screen {
       color: var(--text-dark);
       text-align: right;
-      font-size: 50px;
+      font-size: 56px;
       font-weight: 600;
-      margin-top: 70px;
-      direction: ltr;
+      height: 60px;
+      line-height: 1.1;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      direction: ltr;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
     }
 
     .buttons {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(5, 1fr);
       gap: 6px;
+      flex-grow: 1;
     }
 
     button {
@@ -157,11 +203,20 @@
       grid-column: span 2;
     }
 
+    .tall {
+      grid-row: span 2;
+    }
+
     .kbd-hint {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
+      margin-top: 3px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
       text-align: center;
+    }
+
+    [data-theme="dark"] .kbd-hint {
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .theme-toggle {
@@ -169,7 +224,7 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      margin-top: 4px;
+      margin-top: 2px;
       font-size: 13px;
       color: var(--muted);
     }
@@ -225,6 +280,7 @@
 
     @media (max-width: 420px) {
       .big-screen { font-size: 40px; }
+      .small-screen { font-size: 11.5px; }
       button { height: 70px; font-size: 24px; }
       .calculator { padding: 10px; }
     }
@@ -235,8 +291,14 @@
 <div class="calculator" role="application" aria-label="آلة حاسبة">
   <div class="display">
     <div class="operation-count">عدد: 0</div>
-    <div class="small-screen" id="smallScreen" aria-label="المعادلة"></div>
-    <div class="big-screen" id="bigScreen" aria-label="النتيجة">0</div>
+
+    <div class="equation-area">
+      <div class="small-screen" id="smallScreen" aria-label="المعادلة"></div>
+    </div>
+
+    <div class="result-area">
+      <div class="big-screen" id="bigScreen" aria-label="النتيجة">0</div>
+    </div>
   </div>
 
   <div class="buttons">
@@ -262,7 +324,7 @@
 
     <button class="btn-num zero-wide" data-num="0">0</button>
     <button class="btn-num" data-num=".">.</button>
-    <button class="btn-op" id="equals">=</button>
+    <button class="btn-op tall" id="equals">=</button>
   </div>
 
   <div class="kbd-hint">By Elsakar-Tech</div>
@@ -272,7 +334,7 @@
       <input type="checkbox" id="darkModeToggle">
       <span class="slider"></span>
     </label>
-    <span class="toggle-label">وضع داكن</span>
+    <span class="toggle-label">Dark Mode</span>
   </div>
 </div>
 
@@ -286,21 +348,29 @@
   let expr = "";
   let operationCount = 0;
 
+  // ← الدالة الجديدة: تنسيق الرقم بفواصل
+  function formatNumber(x) {
+    if (x === "" || x === null || x === undefined) return "0";
+    
+    const num = parseFloat(x);
+    if (isNaN(num)) return x;
+
+    // تنسيق العدد بإضافة فواصل كل 3 أرقام
+    return num.toLocaleString('en-US');
+  }
+
   const isOperator = ch => ['+', '−', '-', '×', '÷', '*', '/', '%'].includes(ch);
   const opDisplayToEval = s => s.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
 
-  // 🔢 دالة لحساب الناتج الفوري
   function calculatePreview() {
     if (expr === "") {
-      bigScreen.textContent = "0";
+      bigScreen.textContent = formatNumber("0");
       return;
     }
 
-    // افصل آخر عملية
     const parts = expr.split(/([\+\-×÷\*\/%])/).filter(p => p !== "");
     let exprToCalc = expr;
 
-    // لو آخر حرف عملية، احذفه من الحساب
     if (parts.length > 0 && isOperator(parts[parts.length - 1])) {
       exprToCalc = expr.slice(0, -1);
     }
@@ -308,20 +378,27 @@
     try {
       const safeExpr = opDisplayToEval(exprToCalc);
       if (safeExpr.trim() === "") {
-        bigScreen.textContent = "0";
+        bigScreen.textContent = formatNumber("0");
         return;
       }
       const result = Function('"use strict"; return (' + safeExpr + ')')();
       const finalResult = Number.isFinite(result) ? parseFloat(result.toPrecision(12)) : result;
-      bigScreen.textContent = finalResult;
+      bigScreen.textContent = formatNumber(finalResult);
     } catch (e) {
-      // ما تغيرش الشاشة لو في خطأ
+      // لا تُظهر الخطأ فوراً
     }
   }
 
-  // 🔄 تحديث الشاشات (بدون التأثير على bigScreen)
   function refreshDisplays() {
+    // ← هنا: نستخدم formatNumber في smallScreen فقط إذا كان رقمًا بس
+    // لكن نبقي expr كما هو للحساب
     smallScreen.textContent = expr;
+
+    // علشان نظهر الفواصل في smallScreen لو كان في رقم كامل؟
+    // نسيبها raw، لكن لو حابب نعمل format للأرقام في المعادلة، نستخدم دالة أذكى
+    // بس دلوقتي نبقيها طبيعية، واللي يظهر بالفواصل هو النتيجة فقط
+    // لكن لو حابب نعمل format للمعادلة: نستخدم دالة parse و replace ذكية (مستقبلاً)
+
     countEl.textContent = "عدد: " + operationCount;
     clearBtn.textContent = expr === "" ? "AC" : "C";
   }
@@ -373,10 +450,21 @@
 
     try {
       const safeExpr = opDisplayToEval(expr);
+      if (safeExpr.trim() === "") {
+        bigScreen.textContent = formatNumber("0");
+        return;
+      }
       const result = Function('"use strict"; return (' + safeExpr + ')')();
       const finalResult = Number.isFinite(result) ? parseFloat(result.toPrecision(12)) : result;
-      bigScreen.textContent = finalResult;
-      expr = String(finalResult);
+      const resultStr = String(finalResult);
+
+      // ← نعرض النتيجة بفواصل
+      bigScreen.textContent = formatNumber(finalResult);
+      expr = resultStr;
+      
+      operationCount++;
+      if (operationCount > 999) operationCount = 999;
+
       refreshDisplays();
     } catch (e) {
       bigScreen.textContent = 'خطأ';
@@ -389,7 +477,7 @@
   function clearAll() {
     expr = "";
     operationCount = 0;
-    bigScreen.textContent = "0";
+    bigScreen.textContent = formatNumber("0");
     refreshDisplays();
   }
 
@@ -463,9 +551,4 @@
 </script>
 
 </body>
-
 </html>
-
-
-
-
